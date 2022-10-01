@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:math';
 
 import 'package:driving_test/config/constants.dart';
@@ -8,7 +7,7 @@ import 'package:driving_test/state/iap/iap_bloc.dart';
 import 'package:driving_test/state/iap/iap_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 
 class DrivingTestApp extends StatefulWidget {
   const DrivingTestApp({Key? key}) : super(key: key);
@@ -19,29 +18,14 @@ class DrivingTestApp extends StatefulWidget {
 
 class _DrivingTestAppState extends State<DrivingTestApp> {
   IAPBloc get iapBloc => context.read<IAPBloc>();
-  late StreamSubscription<List<PurchaseDetails>> _subscription;
-  final InAppPurchase inAppPurchase = InAppPurchase.instance;
 
   @override
   void initState() {
-    final Stream<List<PurchaseDetails>> purchaseUpdated =
-        inAppPurchase.purchaseStream;
-    _subscription =
-        purchaseUpdated.listen((List<PurchaseDetails> purchaseDetailsList) {
-      _listenToPurchaseUpdated(purchaseDetailsList);
-    }, onDone: () {
-      _subscription.cancel();
-    }, onError: (Object error) {
-      // handle error here.
-    });
     iapBloc.add(InitStoreInfo());
+    Purchases.addPurchaserInfoUpdateListener((purchaserInfo) {
+      _updatePurchaseStatus();
+    });
     super.initState();
-  }
-
-  @override
-  void dispose() {
-    _subscription.cancel();
-    super.dispose();
   }
 
   @override
@@ -70,52 +54,14 @@ class _DrivingTestAppState extends State<DrivingTestApp> {
     );
   }
 
-  Future<void> _listenToPurchaseUpdated(
-      List<PurchaseDetails> purchaseDetailsList) async {
-    for (final PurchaseDetails purchaseDetails in purchaseDetailsList) {
-      if (purchaseDetails.status == PurchaseStatus.pending) {
-        showPendingUI();
-      } else {
-        if (purchaseDetails.status == PurchaseStatus.error) {
-          handleError(purchaseDetails.error!);
-        } else if (purchaseDetails.status == PurchaseStatus.purchased ||
-            purchaseDetails.status == PurchaseStatus.restored) {
-          final bool valid = await _verifyPurchase(purchaseDetails);
-          if (valid) {
-            deliverProduct(purchaseDetails);
-          } else {
-            _handleInvalidPurchase(purchaseDetails);
-            return;
-          }
-        }
+  void _updatePurchaseStatus() async {
+    final purchaserInfo = await Purchases.getPurchaserInfo();
 
-        if (purchaseDetails.pendingCompletePurchase) {
-          await inAppPurchase.completePurchase(purchaseDetails);
-        }
-      }
+    final entitlements = purchaserInfo.entitlements.active.values.toList();
+    if (entitlements.isEmpty) {
+      iapBloc.add(PurchasePending());
+    } else {
+      iapBloc.add(PurchaseVerified(purchases: entitlements));
     }
-  }
-
-  void handleError(IAPError error) {
-    iapBloc.add(PurchaseError());
-  }
-
-  Future<bool> _verifyPurchase(PurchaseDetails purchaseDetails) {
-    // IMPORTANT!! Always verify a purchase before delivering the product.
-    // For the purpose of an example, we directly return true.
-    return Future<bool>.value(true);
-  }
-
-  void _handleInvalidPurchase(PurchaseDetails purchaseDetails) {
-    // handle invalid purchase here if  _verifyPurchase` failed.
-  }
-
-  void showPendingUI() {
-    iapBloc.add(PurchasePending());
-  }
-
-  Future<void> deliverProduct(PurchaseDetails purchaseDetails) async {
-    // IMPORTANT!! Always verify purchase details before delivering the product.
-    iapBloc.add(PurchaseVerified(purchaseDetails: purchaseDetails));
   }
 }

@@ -1,9 +1,11 @@
 import 'package:driving_test/config/colors.dart';
 import 'package:driving_test/config/constants.dart';
+import 'package:driving_test/config/images.dart';
 import 'package:driving_test/domain/entities/chapter.dart';
 import 'package:driving_test/domain/entities/question.dart';
 import 'package:driving_test/routes.dart';
 import 'package:driving_test/state/chapters/chapter_selector.dart';
+import 'package:driving_test/state/iap/iap_selector.dart';
 import 'package:driving_test/state/learn/learn_bloc.dart';
 import 'package:driving_test/state/learn/learn_event.dart';
 import 'package:driving_test/ui/widgets/illustration_card.dart';
@@ -26,7 +28,7 @@ class _LearnScreenState extends State<LearnScreen> {
       (chapterMap) => ListView.builder(
         itemCount: 1 + chapterMap.length,
         itemBuilder: ((_, index) => index == 0
-            ? const IllustrationCardView()
+            ? const IllustrationCardView(image: AppImages.bannerLearn)
             : _buildChapterWidget(
                 chapterMap,
                 index,
@@ -160,78 +162,86 @@ class _LearnScreenState extends State<LearnScreen> {
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(
-              left: 16.0,
-              right: 16.0,
-            ),
-            child: GestureDetector(
-              onTap: () {
-                _onPressMCQ(chapterMap.keys.elementAt(index - 1),
-                    chapterMap.values.elementAt(index - 1));
-              },
-              child: Card(
-                color: Colors.white,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    children: const <Widget>[
-                      Expanded(
-                        child: Text(
-                          'MCQ',
-                          style: TextStyle(
-                            color: AppColors.matisse,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+          IAPStatusSelector((purchasePending, _) => Padding(
+                padding: const EdgeInsets.only(
+                  left: 16.0,
+                  right: 16.0,
+                ),
+                child: GestureDetector(
+                  onTap: () {
+                    if (!purchasePending) {
+                      _onPressMCQ(chapterMap.keys.elementAt(index - 1),
+                          chapterMap.values.elementAt(index - 1));
+                    }
+                  },
+                  child: Card(
+                    color: Colors.white,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        children: <Widget>[
+                          const Expanded(
+                            child: Text(
+                              'MCQ',
+                              style: TextStyle(
+                                color: AppColors.matisse,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
-                        ),
+                          Icon(
+                            purchasePending
+                                ? Icons.lock_outline
+                                : Icons.keyboard_arrow_right,
+                            color: AppColors.matisse,
+                          )
+                        ],
                       ),
-                      Icon(
-                        Icons.keyboard_arrow_right,
-                        color: AppColors.matisse,
-                      )
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(
-              left: 16.0,
-              right: 16.0,
-            ),
-            child: GestureDetector(
-              onTap: () {
-                _onPressFillBlank(chapterMap.keys.elementAt(index - 1),
-                    chapterMap.values.elementAt(index - 1));
-              },
-              child: Card(
-                color: Colors.white,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    children: const <Widget>[
-                      Expanded(
-                        child: Text(
-                          'Fill Blanks',
-                          style: TextStyle(
-                            color: AppColors.matisse,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+              )),
+          IAPStatusSelector((purchasePending, _) => Padding(
+                padding: const EdgeInsets.only(
+                  left: 16.0,
+                  right: 16.0,
+                ),
+                child: GestureDetector(
+                  onTap: () {
+                    if (!purchasePending) {
+                      _onPressFillBlank(chapterMap.keys.elementAt(index - 1),
+                          chapterMap.values.elementAt(index - 1));
+                    }
+                  },
+                  child: Card(
+                    color: Colors.white,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        children: <Widget>[
+                          const Expanded(
+                            child: Text(
+                              'Fill Blanks',
+                              style: TextStyle(
+                                color: AppColors.matisse,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
-                        ),
+                          Icon(
+                            purchasePending
+                                ? Icons.lock_outline
+                                : Icons.keyboard_arrow_right,
+                            color: AppColors.matisse,
+                          )
+                        ],
                       ),
-                      Icon(
-                        Icons.keyboard_arrow_right,
-                        color: AppColors.matisse,
-                      )
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ),
-          ),
+              )),
         ],
       ),
     );

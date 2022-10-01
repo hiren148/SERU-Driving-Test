@@ -1,14 +1,24 @@
+import 'package:driving_test/config/colors.dart';
 import 'package:driving_test/config/images.dart';
 import 'package:driving_test/state/bottomitem/bottom_item_cubit.dart';
 import 'package:driving_test/state/chapters/chapter_selector.dart';
+import 'package:driving_test/state/iap/iap_bloc.dart';
+import 'package:driving_test/state/iap/iap_event.dart';
 import 'package:driving_test/state/iap/iap_selector.dart';
 import 'package:driving_test/ui/widgets/illustration_card.dart';
 import 'package:driving_test/ui/widgets/test_type_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  IAPBloc get iapBloc => context.read<IAPBloc>();
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +27,7 @@ class DashboardScreen extends StatelessWidget {
 
     return ListView(
       children: [
-        const IllustrationCardView(),
+        const IllustrationCardView(image: AppImages.bannerDashboard),
         SizedBox(
           height: 112.0,
           child: ReviewListSelector(
@@ -47,14 +57,46 @@ class DashboardScreen extends StatelessWidget {
             ),
           ),
         ),
-        IAPPurchasesSelector((purchases) => OutlinedButton(
-              onPressed: () {},
-              child: Text(
-                purchases.isEmpty
-                    ? 'Subscribe Now'
-                    : 'Subscription Active ${purchases.first.purchaseID}',
-              ),
-            )),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: IAPStatusSelector((purchasePending, products) => ElevatedButton(
+                onPressed: () {
+                  if (purchasePending) {
+                    if (products.isNotEmpty) {
+                      if (products.first.availablePackages.isNotEmpty) {
+                        iapBloc.add(BuyNonConsumable(
+                            purchaseParam:
+                                products.first.availablePackages.first));
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Subscription is not available at moment!',
+                            ),
+                          ),
+                        );
+                      }
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Subscription is not available at moment!',
+                          ),
+                        ),
+                      );
+                    }
+                  } else {
+                    iapBloc.add(RestorePurchase());
+                  }
+                },
+    style: ElevatedButton.styleFrom(
+    primary: AppColors.matisse,
+    ),
+                child: Text(
+                  purchasePending ? 'Subscribe Now' : 'Restore Purchase',
+                ),
+              )),
+        ),
         TestTypeCardView(
           title: 'Learn',
           subtitle: 'Read question and answers',
@@ -62,6 +104,7 @@ class DashboardScreen extends StatelessWidget {
           onPressed: () {
             bottomStateCubit.onItemTapped(1);
           },
+          purchasePending: false,
         ),
         TestTypeCardView(
           title: 'Test',
@@ -70,6 +113,7 @@ class DashboardScreen extends StatelessWidget {
           onPressed: () {
             bottomStateCubit.onItemTapped(2);
           },
+          purchasePending: false,
         ),
       ],
     );

@@ -2,7 +2,7 @@ import 'package:driving_test/state/iap/iap_bloc.dart';
 import 'package:driving_test/state/iap/iap_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 
 class IAPStateSelector<T> extends BlocSelector<IAPBloc, IAPState, T> {
   IAPStateSelector({
@@ -16,55 +16,51 @@ class IAPStateSelector<T> extends BlocSelector<IAPBloc, IAPState, T> {
 
 class IAPStatusSelector extends IAPStateSelector<IAPStatusState> {
   IAPStatusSelector(
-      Widget Function(String?, bool, bool, bool, List<String>,
-              List<PurchaseDetails>, List<ProductDetails>)
+      Widget Function(
+               bool, List<Offering>)
           builder)
       : super(
           selector: (state) => IAPStatusState(
-            state.queryProductError,
+            // state.queryProductError,
             state.purchasePending,
-            state.isAvailable,
-            state.loading,
-            state.notFoundIds,
-            state.purchases,
+            // state.isAvailable,
+            // state.loading,
+            // state.purchases,
             state.products,
           ),
           builder: (value) => builder(
-            value.queryProductError,
+            // value.queryProductError,
             value.purchasePending,
-            value.isAvailable,
-            value.loading,
-            value.notFoundIds,
-            value.purchases,
+            // value.isAvailable,
+            // value.loading,
+            // value.purchases,
             value.products,
           ),
         );
 }
 
 class IAPStatusState {
-  final String? queryProductError;
+  // final String? queryProductError;
   final bool purchasePending;
-  final bool isAvailable;
-  final bool loading;
-  final List<String> notFoundIds;
-  final List<PurchaseDetails> purchases;
-  final List<ProductDetails> products;
+  // final bool isAvailable;
+  // final bool loading;
+  // final List<EntitlementInfo> purchases;
+  final List<Offering> products;
 
   IAPStatusState(
-    this.queryProductError,
+    // this.queryProductError,
     this.purchasePending,
-    this.isAvailable,
-    this.loading,
-    this.notFoundIds,
-    this.purchases,
+    // this.isAvailable,
+    // this.loading,
+    // this.purchases,
     this.products,
   );
 }
 
-class IAPPurchasesSelector extends IAPStateSelector<List<PurchaseDetails>> {
-  IAPPurchasesSelector(Widget Function(List<PurchaseDetails>) builder)
+class IAPPurchasePendingSelector extends IAPStateSelector<bool> {
+  IAPPurchasePendingSelector(Widget Function(bool) builder)
       : super(
-          selector: (state) => state.purchases,
+          selector: (state) => state.purchasePending,
           builder: builder,
         );
 }

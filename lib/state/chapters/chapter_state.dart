@@ -64,7 +64,7 @@ class ChapterState {
     );
   }
 
-  List<String> getRandomReviews(){
+  List<String> getRandomReviews() {
     final List<String> reviews = [];
     final indices = _generateUniqueIndices(5, reviewList.length);
     for (var index in indices) {
@@ -89,6 +89,9 @@ class ChapterState {
   List<int> _generateUniqueIndices(int noOfRandom, int length) {
     var indexList = List.generate(length, (index) => index);
     indexList.shuffle();
+    if (length <= noOfRandom) {
+      return indexList;
+    }
     return indexList.sublist(0, noOfRandom);
   }
 }

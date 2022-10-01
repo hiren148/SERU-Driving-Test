@@ -1,20 +1,13 @@
-import 'dart:async';
-
+import 'package:driving_test/config/store_config.dart';
 import 'package:driving_test/state/iap/iap_event.dart';
 import 'package:driving_test/state/iap/iap_state.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:stream_transform/stream_transform.dart';
-import 'package:in_app_purchase/in_app_purchase.dart';
-
-const String _kSubscriptionId = 'seru.test.subscription';
-const List<String> _kProductIds = <String>[
-  _kSubscriptionId,
-];
 
 class IAPBloc extends Bloc<IAPEvent, IAPState> {
-  final InAppPurchase _inAppPurchase;
-
-  IAPBloc(this._inAppPurchase) : super(const IAPState.initial()) {
+  IAPBloc() : super(const IAPState.initial()) {
     on<InitStoreInfo>(
       _onInitStoreInfo,
       transformer: (events, mapper) => events.switchMap(mapper),
@@ -36,10 +29,6 @@ class IAPBloc extends Bloc<IAPEvent, IAPState> {
       _onRestorePurchase,
     );
 
-    on<CompletePurchase>(
-      _onCompletePurchase,
-    );
-
     on<BuyNonConsumable>(
       _onBuyNonConsumable,
     );
@@ -47,33 +36,22 @@ class IAPBloc extends Bloc<IAPEvent, IAPState> {
 
   void _onInitStoreInfo(InitStoreInfo event, Emitter<IAPState> emit) async {
     emit(state.asLoading(true));
-    final bool isAvailable = await _inAppPurchase.isAvailable();
-    if (!isAvailable) {
-      emit(state.asIsAvailable(isAvailable, false));
-      return;
-    }
 
-    final ProductDetailsResponse productDetailResponse =
-        await _inAppPurchase.queryProductDetails(_kProductIds.toSet());
-    if (productDetailResponse.error != null) {
-      emit(state.asQueryProductError(
-          productDetailResponse.error!.message,
-          productDetailResponse.notFoundIDs,
-          productDetailResponse.productDetails,
-          isAvailable,
-          false));
-      return;
-    }
+    await Purchases.setup(StoreConfig.instance?.apiKey ?? '');
 
-    if (productDetailResponse.productDetails.isNotEmpty) {
-      emit(state.asQueryProductResponse(
-        isAvailable,
-        productDetailResponse.productDetails,
-        productDetailResponse.notFoundIDs,
-        false,
-      ));
-    } else {
-      emit(state.asLoading(false));
+    try {
+      final offering = await Purchases.getOfferings();
+      if (offering.current != null) {
+        emit(state.asQueryProductResponse(
+          true,
+          [offering.current!],
+          false,
+        ));
+      } else {
+        emit(state.asLoading(false));
+      }
+    } on PlatformException catch (error) {
+      emit(state.asQueryProductError(error.message, false, false));
     }
   }
 
@@ -86,19 +64,31 @@ class IAPBloc extends Bloc<IAPEvent, IAPState> {
   }
 
   void _onPurchaseVerified(PurchaseVerified event, Emitter<IAPState> emit) {
-    emit(state.asPurchaseUpdated(false,
-        purchases: <PurchaseDetails>[event.purchaseDetails]));
+    emit(state.asPurchaseUpdated(false, purchases: event.purchases));
   }
 
-  void _onRestorePurchase(RestorePurchase event, Emitter<IAPState> emit) {
-    _inAppPurchase.restorePurchases();
+  void _onRestorePurchase(RestorePurchase event, Emitter<IAPState> emit) async {
+    try {
+      final PurchaserInfo purchaserInfo = await Purchases.restoreTransactions();
+      if (purchaserInfo.entitlements.active.isEmpty) {
+        emit(state.asPurchaseUpdated(true));
+      } else {
+        emit(state.asPurchaseUpdated(false,
+            purchases: purchaserInfo.entitlements.active.values.toList()));
+      }
+    } on PlatformException catch (e) {
+      emit(state.asQueryProductError(
+          e.message, state.isAvailable, state.loading));
+    }
   }
 
-  void _onCompletePurchase(CompletePurchase event, Emitter<IAPState> emit) {
-    _inAppPurchase.completePurchase(event.purchase);
-  }
-
-  void _onBuyNonConsumable(BuyNonConsumable event, Emitter<IAPState> emit) {
-    _inAppPurchase.buyNonConsumable(purchaseParam: event.purchaseParam);
+  void _onBuyNonConsumable(
+      BuyNonConsumable event, Emitter<IAPState> emit) async {
+    try {
+      await Purchases.purchasePackage(event.purchaseParam);
+    } catch (e) {
+      emit(state.asQueryProductError(
+          e.toString(), state.isAvailable, state.loading));
+    }
   }
 }

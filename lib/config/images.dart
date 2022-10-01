@@ -23,6 +23,9 @@ class AppImages {
   static const imgMultipleChoice = _Image('img_multiple_choice.png');
   static const imgFillBlank = _Image('img_fill_blank.png');
   static const imgLauncher = _Image('ic_launcher.png');
+  static const bannerDashboard = _Image('banner_top.png');
+  static const bannerLearn = _Image('learn_banner.png');
+  static const bannerTest = _Image('test_banner.png');
 
   static Future precacheAssets(BuildContext context) async {
     await precacheImage(home, context);
@@ -41,5 +44,8 @@ class AppImages {
     await precacheImage(imgMultipleChoice, context);
     await precacheImage(imgFillBlank, context);
     await precacheImage(imgLauncher, context);
+    await precacheImage(bannerDashboard, context);
+    await precacheImage(bannerLearn, context);
+    await precacheImage(bannerTest, context);
   }
 }

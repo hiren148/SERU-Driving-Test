@@ -6,13 +6,14 @@ class TestTypeCardView extends StatelessWidget {
   final String subtitle;
   final AssetImage image;
   final GestureTapCallback onPressed;
+  final bool purchasePending;
 
   const TestTypeCardView({
     Key? key,
     required this.title,
     required this.subtitle,
     required this.image,
-    required this.onPressed,
+    required this.onPressed, required this.purchasePending,
   }) : super(key: key);
 
   @override
@@ -65,8 +66,8 @@ class TestTypeCardView extends StatelessWidget {
                   const SizedBox(
                     width: 16.0,
                   ),
-                  const Icon(
-                    Icons.arrow_forward,
+                  Icon(
+                    purchasePending ? Icons.lock_outline : Icons.arrow_forward,
                     color: Colors.white,
                   ),
                 ],

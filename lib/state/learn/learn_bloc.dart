@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:driving_test/config/constants.dart';
 import 'package:driving_test/state/learn/learn_event.dart';
 import 'package:driving_test/state/learn/learn_state.dart';

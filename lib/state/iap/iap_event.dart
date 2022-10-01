@@ -1,4 +1,5 @@
-import 'package:in_app_purchase/in_app_purchase.dart';
+
+import 'package:purchases_flutter/purchases_flutter.dart';
 
 abstract class IAPEvent {
   const IAPEvent();
@@ -11,21 +12,15 @@ class PurchaseError extends IAPEvent {}
 class PurchasePending extends IAPEvent {}
 
 class PurchaseVerified extends IAPEvent {
-  final PurchaseDetails purchaseDetails;
+  final List<EntitlementInfo> purchases;
 
-  const PurchaseVerified({required this.purchaseDetails});
+  const PurchaseVerified({required this.purchases});
 }
 
 class RestorePurchase extends IAPEvent{}
 
-class CompletePurchase extends IAPEvent{
-  final PurchaseDetails purchase;
-
-  const CompletePurchase({required this.purchase});
-}
-
 class BuyNonConsumable extends IAPEvent{
-  final PurchaseParam purchaseParam;
+  final Package purchaseParam;
 
   const BuyNonConsumable({required this.purchaseParam});
 }

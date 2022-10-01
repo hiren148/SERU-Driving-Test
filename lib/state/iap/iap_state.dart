@@ -1,20 +1,16 @@
-import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 
 class IAPState {
-  final List<String> notFoundIds;
-  final List<ProductDetails> products;
-  final List<PurchaseDetails> purchases;
-  final List<String> consumables;
+  final List<Offering> products;
+  final List<EntitlementInfo> purchases;
   final bool isAvailable;
   final bool purchasePending;
   final bool loading;
   final String? queryProductError;
 
   const IAPState._({
-    this.notFoundIds = const <String>[],
-    this.products = const <ProductDetails>[],
-    this.purchases = const <PurchaseDetails>[],
-    this.consumables = const <String>[],
+    this.products = const <Offering>[],
+    this.purchases = const <EntitlementInfo>[],
     this.isAvailable = false,
     this.purchasePending = false,
     this.loading = false,
@@ -24,20 +20,16 @@ class IAPState {
   const IAPState.initial() : this._();
 
   IAPState copyWith({
-    List<String>? notFoundIds,
-    List<ProductDetails>? products,
-    List<PurchaseDetails>? purchases,
-    List<String>? consumables,
+    List<Offering>? products,
+    List<EntitlementInfo>? purchases,
     bool? isAvailable,
     bool? purchasePending,
     bool? loading,
     String? queryProductError,
   }) {
     return IAPState._(
-      notFoundIds: notFoundIds ?? this.notFoundIds,
       products: products ?? this.products,
       purchases: purchases ?? this.purchases,
-      consumables: consumables ?? this.consumables,
       isAvailable: isAvailable ?? this.isAvailable,
       purchasePending: purchasePending ?? this.purchasePending,
       loading: loading ?? this.loading,
@@ -55,15 +47,11 @@ class IAPState {
 
   IAPState asQueryProductError(
     String? queryProductError,
-    List<String> notFoundIds,
-    List<ProductDetails> products,
     bool isAvailable,
     bool loading,
   ) {
     return copyWith(
       queryProductError: queryProductError,
-      notFoundIds: notFoundIds,
-      products: products,
       isAvailable: isAvailable,
       loading: loading,
     );
@@ -71,12 +59,10 @@ class IAPState {
 
   IAPState asQueryProductResponse(
     bool isAvailable,
-    List<ProductDetails> products,
-    List<String> notFoundIds,
+    List<Offering> products,
     bool loading,
   ) {
     return copyWith(
-      notFoundIds: notFoundIds,
       products: products,
       isAvailable: isAvailable,
       loading: loading,
@@ -84,7 +70,7 @@ class IAPState {
   }
 
   IAPState asPurchaseUpdated(bool purchasePending,
-      {List<PurchaseDetails>? purchases}) {
+      {List<EntitlementInfo>? purchases}) {
     return copyWith(
       purchasePending: purchasePending,
       purchases: purchases,

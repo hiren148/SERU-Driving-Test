@@ -4,6 +4,7 @@ import 'package:driving_test/routes.dart';
 import 'package:driving_test/state/chapters/chapter_selector.dart';
 import 'package:driving_test/state/exam/exam_bloc.dart';
 import 'package:driving_test/state/exam/exam_event.dart';
+import 'package:driving_test/state/iap/iap_selector.dart';
 import 'package:driving_test/ui/widgets/illustration_card.dart';
 import 'package:driving_test/ui/widgets/test_type_card.dart';
 import 'package:flutter/material.dart';
@@ -23,45 +24,58 @@ class _ExamScreenState extends State<ExamScreen> {
   Widget build(BuildContext context) {
     return ListView(
       children: [
-        const IllustrationCardView(),
-        CreateExamSelector(
-          20,
-          (questions) => TestTypeCardView(
-            title: 'Start new test',
-            subtitle: '20 questions',
-            image: AppImages.imgFillBlank,
-            onPressed: () {
-              _onPressedStartTest(questions);
-            },
-          ),
-        ),
-        CreateExamSelector(
-          30,
-          (questions) => TestTypeCardView(
-            title: 'Start new test',
-            subtitle: '30 questions',
-            image: AppImages.imgFillBlank,
-            onPressed: () {
-              _onPressedStartTest(questions);
-            },
-          ),
-        ),
-        CreateExamSelector(
-          50,
-          (questions) => TestTypeCardView(
-            title: 'Start new test',
-            subtitle: '50 questions',
-            image: AppImages.imgFillBlank,
-            onPressed: () {
-              _onPressedStartTest(questions);
-            },
-          ),
-        ),
+        const IllustrationCardView(image: AppImages.bannerTest),
+        IAPStatusSelector((purchasePending, products) => CreateExamSelector(
+              20,
+              (questions) => TestTypeCardView(
+                title: 'Start new test',
+                subtitle: '20 questions',
+                image: AppImages.imgFillBlank,
+                onPressed: () {
+                  if (purchasePending) {
+                  } else {
+                    _onPressedStartTest(questions);
+                  }
+                },
+                purchasePending: purchasePending,
+              ),
+            )),
+        IAPStatusSelector((purchasePending, products) => CreateExamSelector(
+              30,
+              (questions) => TestTypeCardView(
+                title: 'Start new test',
+                subtitle: '30 questions',
+                image: AppImages.imgFillBlank,
+                onPressed: () {
+                  if (purchasePending) {
+                  } else {
+                    _onPressedStartTest(questions);
+                  }
+                },
+                purchasePending: purchasePending,
+              ),
+            )),
+        IAPStatusSelector((purchasePending, products) => CreateExamSelector(
+              50,
+              (questions) => TestTypeCardView(
+                title: 'Start new test',
+                subtitle: '50 questions',
+                image: AppImages.imgFillBlank,
+                onPressed: () {
+                  if (purchasePending) {
+                  } else {
+                    _onPressedStartTest(questions);
+                  }
+                },
+                purchasePending: purchasePending,
+              ),
+            )),
       ],
     );
   }
 
   void _onPressedStartTest(List<Question> questions) {
+    questions.shuffle();
     examBloc.add(LoadQuestions(questions: questions));
     AppNavigator.push(
       Routes.examQuestionnaire,
