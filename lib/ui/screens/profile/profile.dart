@@ -202,9 +202,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     style: ElevatedButton.styleFrom(
                       primary: AppColors.matisse,
                     ),
-                    child: const Text(
-                      'Upgrade Now',
-                    ),
+                    child: products.isNotEmpty &&
+                            products.first.availablePackages.isNotEmpty
+                        ? Text(
+                            'Upgrade Now at ${products.first.availablePackages.first.product.priceString}')
+                        : const Text(
+                            'Upgrade Now',
+                          ),
                   )
                 : const SizedBox.shrink(),
           ),
@@ -215,6 +219,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _launchURL(String url) async {
     final Uri uri = Uri.parse(url);
-    await launchUrl(uri,mode: LaunchMode.externalApplication);
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 }

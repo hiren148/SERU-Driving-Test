@@ -79,9 +79,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     style: ElevatedButton.styleFrom(
                       primary: AppColors.matisse,
                     ),
-                    child: const Text(
-                      'Upgrade Now',
-                    ),
+                    child: products.isNotEmpty &&
+                            products.first.availablePackages.isNotEmpty
+                        ? Text(
+                            'Upgrade Now at ${products.first.availablePackages.first.product.priceString}')
+                        : const Text(
+                            'Upgrade Now',
+                          ),
                   )
                 : const SizedBox.shrink(),
           ),
