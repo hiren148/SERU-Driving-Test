@@ -6,13 +6,16 @@ import 'package:driving_test/domain/entities/option.dart';
 import 'package:driving_test/domain/entities/question.dart';
 
 extension QuestionModelX on NetworkQuestionModel {
-  Question toEntity() => Question(
-        id: id,
-        question: question,
-        type: type,
-        noOfAnswers: noOfAnswer,
-        options: options.map((e) => e.toEntity()).toList(),
-      );
+  Question toEntity() {
+    options.shuffle();
+    return Question(
+      id: id,
+      question: question,
+      type: type,
+      noOfAnswers: noOfAnswer,
+      options: options.map((e) => e.toEntity()).toList(),
+    );
+  }
 }
 
 extension QuestionOptionModelX on NetworkQuestionOptionModel {

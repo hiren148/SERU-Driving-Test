@@ -57,6 +57,6 @@ class LearnBloc extends Bloc<LearnEvent, LearnState> {
   }
 
   void _onLoadTheory(LoadTheory event, Emitter<LearnState> emit) {
-    emit(state.asLoadTheory(event.chapter));
+    emit(state.asLoadTheory(event.chapter, event.theoryParts));
   }
 }

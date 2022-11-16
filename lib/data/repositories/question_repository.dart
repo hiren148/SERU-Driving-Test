@@ -2,6 +2,7 @@ import 'package:driving_test/data/source/network/network_datasource.dart';
 import 'package:driving_test/data/source/network_to_entity_mapper.dart';
 import 'package:driving_test/domain/entities/chapter.dart';
 import 'package:driving_test/domain/entities/question.dart';
+import 'package:driving_test/domain/entities/theory_part.dart';
 
 abstract class QuestionRepository {
   Future<List<Question>> getQuestionsByChapter(Chapter chapter);
@@ -9,6 +10,8 @@ abstract class QuestionRepository {
   Future<List<Chapter>> getChapterList();
 
   Future<List<String>> getReviewList();
+
+  Future<List<TheoryPart>> getTheoryByChapter(Chapter chapter);
 }
 
 class QuestionDefaultRepository extends QuestionRepository {
@@ -31,5 +34,10 @@ class QuestionDefaultRepository extends QuestionRepository {
   @override
   Future<List<String>> getReviewList() async {
     return await networkDataSource.getReviewList();
+  }
+
+  @override
+  Future<List<TheoryPart>> getTheoryByChapter(Chapter chapter) async {
+    return await networkDataSource.getTheoryData(chapter);
   }
 }

@@ -3,12 +3,7 @@ import 'dart:async';
 import 'package:driving_test/config/colors.dart';
 import 'package:driving_test/config/images.dart';
 import 'package:driving_test/routes.dart';
-import 'package:driving_test/state/chapters/chapter_bloc.dart';
-import 'package:driving_test/state/chapters/chapter_event.dart';
-import 'package:driving_test/state/chapters/chapter_selector.dart';
-import 'package:driving_test/state/chapters/chapter_state.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -18,13 +13,12 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  ChapterBloc get chapterBloc => context.read<ChapterBloc>();
-
   @override
   void initState() {
     scheduleMicrotask(() async {
       await AppImages.precacheAssets(context);
-      chapterBloc.add(LoadStarted());
+      await Future.delayed(const Duration(milliseconds: 600));
+      await AppNavigator.replaceWith(Routes.home);
     });
 
     super.initState();
@@ -34,37 +28,14 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ChapterStateStatusSelector(
-              (status) {
-                switch (status) {
-                  case ChapterStateStatus.loading:
-                    return _buildLoading();
-                  case ChapterStateStatus.loadSuccess:
-                    _redirectToHome();
-                    return _buildLogo();
-                  case ChapterStateStatus.loadFailure:
-                    return _buildError();
-                  default:
-                    return Container();
-                }
-              },
-            ),
-          ],
-        ),
+        child: _buildLogo(),
       ),
     );
   }
 
-  void _redirectToHome() async {
-    await Future.delayed(const Duration(milliseconds: 400));
-    await AppNavigator.replaceWith(Routes.home);
-  }
-
   Widget _buildLogo() {
     return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: const <Widget>[
         Image(
           image: AppImages.imgLauncher,
@@ -112,12 +83,32 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Widget _buildError() {
-    return const Center(
-      child: Icon(
-        Icons.warning_amber_rounded,
-        size: 60,
-        color: Colors.black26,
-      ),
+    return Column(
+      children: [
+        const Icon(
+          Icons.warning_amber_rounded,
+          size: 72,
+          color: Colors.black26,
+        ),
+        const SizedBox(
+          height: 8,
+        ),
+        const Text(
+          'Oops!! Something went wrong!',
+        ),
+        const SizedBox(
+          height: 16,
+        ),
+        ElevatedButton(
+          onPressed: () {},
+          style: ElevatedButton.styleFrom(
+            primary: AppColors.matisse,
+          ),
+          child: const Text(
+            'Try again',
+          ),
+        ),
+      ],
     );
   }
 }

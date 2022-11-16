@@ -1,5 +1,6 @@
 import 'package:driving_test/domain/entities/chapter.dart';
 import 'package:driving_test/domain/entities/question.dart';
+import 'package:driving_test/domain/entities/theory_part.dart';
 import 'package:driving_test/state/chapters/chapter_bloc.dart';
 import 'package:driving_test/state/chapters/chapter_state.dart';
 import 'package:flutter/material.dart';
@@ -11,40 +12,65 @@ class ChapterStateSelector<T>
     required T Function(ChapterState) selector,
     required Widget Function(T) builder,
   }) : super(
-    selector: selector,
-    builder: (_, value) => builder(value),
-  );
+          selector: selector,
+          builder: (_, value) => builder(value),
+        );
 }
 
 class ChapterStateStatusSelector
     extends ChapterStateSelector<ChapterStateStatus> {
   ChapterStateStatusSelector(Widget Function(ChapterStateStatus) builder)
       : super(
-    selector: (state) => state.status,
-    builder: builder,
-  );
+          selector: (state) => state.chapterStatus,
+          builder: builder,
+        );
 }
 
-class ChapterListSelector
-    extends ChapterStateSelector<Map<Chapter, List<Question>>> {
-  ChapterListSelector(Widget Function(Map<Chapter, List<Question>>) builder)
+class ReviewStateStatusSelector
+    extends ChapterStateSelector<ReviewStateStatus> {
+  ReviewStateStatusSelector(Widget Function(ReviewStateStatus) builder)
       : super(
-    selector: (state) => state.chapterMap,
-    builder: builder,
-  );
+          selector: (state) => state.reviewStatus,
+          builder: builder,
+        );
+}
+
+class ChapterListSelector extends ChapterStateSelector<ChapterMapState> {
+  ChapterListSelector(
+      Widget Function(
+              Map<Chapter, List<Question>>, Map<Chapter, List<TheoryPart>>)
+          builder)
+      : super(
+          selector: (state) => ChapterMapState(
+            state.chapterMap,
+            state.theoryMap,
+          ),
+          builder: (value) => builder(
+            value.questionMap,
+            value.theoryMap,
+          ),
+        );
+}
+
+class ChapterMapState {
+  final Map<Chapter, List<Question>> questionMap;
+  final Map<Chapter, List<TheoryPart>> theoryMap;
+
+  ChapterMapState(this.questionMap, this.theoryMap);
 }
 
 class CreateExamSelector extends ChapterStateSelector<List<Question>> {
   CreateExamSelector(int noOfQuestions, Widget Function(List<Question>) builder)
       : super(
-    selector: (state) => state.createExam(noOfQuestions),
-    builder: builder,
-  );
+          selector: (state) => state.createExam(noOfQuestions),
+          builder: builder,
+        );
 }
 
 class ReviewListSelector extends ChapterStateSelector<List<String>> {
-  ReviewListSelector(Widget Function(List<String>) builder) :super(
-    selector: (state) => state.getRandomReviews(),
-    builder: builder,
-  );
+  ReviewListSelector(Widget Function(List<String>) builder)
+      : super(
+          selector: (state) => state.getRandomReviews(),
+          builder: builder,
+        );
 }

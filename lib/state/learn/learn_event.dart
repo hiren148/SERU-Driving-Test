@@ -1,5 +1,6 @@
 import 'package:driving_test/domain/entities/chapter.dart';
 import 'package:driving_test/domain/entities/question.dart';
+import 'package:driving_test/domain/entities/theory_part.dart';
 
 abstract class LearnEvent {
   const LearnEvent();
@@ -17,8 +18,12 @@ class LoadQuestions extends LearnEvent {
 
 class LoadTheory extends LearnEvent {
   final Chapter chapter;
+  final List<TheoryPart> theoryParts;
 
-  LoadTheory({required this.chapter});
+  LoadTheory({
+    required this.chapter,
+    required this.theoryParts,
+  });
 }
 
 class NextClicked extends LearnEvent {}

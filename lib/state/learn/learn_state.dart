@@ -3,10 +3,12 @@ import 'package:driving_test/domain/entities/chapter.dart';
 import 'package:driving_test/domain/entities/fill_blanks_part.dart';
 import 'package:driving_test/domain/entities/option.dart';
 import 'package:driving_test/domain/entities/question.dart';
+import 'package:driving_test/domain/entities/theory_part.dart';
 
 class LearnState {
   final Chapter? chapter;
   final List<Question> questions;
+  final List<TheoryPart> theoryParts;
   final int selectedQuestionIndex;
 
   Question get selectedQuestion => questions[selectedQuestionIndex];
@@ -54,6 +56,7 @@ class LearnState {
   const LearnState._({
     this.chapter,
     this.questions = const [],
+    this.theoryParts = const [],
     this.selectedQuestionIndex = 0,
   });
 
@@ -62,17 +65,20 @@ class LearnState {
   LearnState copyWith({
     Chapter? chapter,
     List<Question>? questions,
+    List<TheoryPart>? theoryParts,
     int? selectedQuestionIndex,
   }) {
     return LearnState._(
       chapter: chapter ?? this.chapter,
       questions: questions ?? this.questions,
+      theoryParts: theoryParts ?? this.theoryParts,
       selectedQuestionIndex:
           selectedQuestionIndex ?? this.selectedQuestionIndex,
     );
   }
 
-  LearnState asLoadSuccess(Chapter chapter, List<Question> questions, int selectedQuestionIndex) {
+  LearnState asLoadSuccess(
+      Chapter chapter, List<Question> questions, int selectedQuestionIndex) {
     return copyWith(
       chapter: chapter,
       questions: questions,
@@ -80,9 +86,10 @@ class LearnState {
     );
   }
 
-  LearnState asLoadTheory(Chapter chapter){
+  LearnState asLoadTheory(Chapter chapter, List<TheoryPart> theoryParts) {
     return copyWith(
       chapter: chapter,
+      theoryParts: theoryParts,
     );
   }
 

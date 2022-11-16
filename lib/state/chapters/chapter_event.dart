@@ -2,4 +2,6 @@ abstract class ChapterEvent {
   const ChapterEvent();
 }
 
-class LoadStarted extends ChapterEvent {}
+class ChapterLoadStarted extends ChapterEvent {}
+
+class ReviewLoadStarted extends ChapterEvent {}

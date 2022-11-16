@@ -26,6 +26,16 @@ class AppImages {
   static const bannerDashboard = _Image('banner_top.png');
   static const bannerLearn = _Image('learn_banner.png');
   static const bannerTest = _Image('test_banner.png');
+  static const imgTransportLondon = _Image('ic_transport_london.jpg');
+  static const imgCCTVCameras = _Image('ic_cctv_cameras.png');
+  static const imgParking = _Image('ic_parking.jpg');
+  static const imgParkingRoute = _Image('ic_parking_route.jpg');
+  static const imgWindscreenVision1 = _Image('ic_windscreen_vision_1.jpg');
+  static const imgWindscreenVision2 = _Image('ic_windscreen_vision_2.jpg');
+  static const imgWindscreenVision3 = _Image('ic_windscreen_vision_3.jpg');
+  static const imgWindscreenVision4 = _Image('ic_windscreen_vision_4.png');
+  static const imgCyclist = _Image('ic_cyclist.jpg');
+  static const imgAssistantDog = _Image('ic_assistant_dog.jpg');
 
   static Future precacheAssets(BuildContext context) async {
     await precacheImage(home, context);
@@ -47,5 +57,15 @@ class AppImages {
     await precacheImage(bannerDashboard, context);
     await precacheImage(bannerLearn, context);
     await precacheImage(bannerTest, context);
+    await precacheImage(imgTransportLondon, context);
+    await precacheImage(imgCCTVCameras, context);
+    await precacheImage(imgParking, context);
+    await precacheImage(imgParkingRoute, context);
+    await precacheImage(imgWindscreenVision1, context);
+    await precacheImage(imgWindscreenVision2, context);
+    await precacheImage(imgWindscreenVision3, context);
+    await precacheImage(imgWindscreenVision4, context);
+    await precacheImage(imgCyclist, context);
+    await precacheImage(imgAssistantDog, context);
   }
 }

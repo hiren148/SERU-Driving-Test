@@ -1,5 +1,6 @@
 import 'package:driving_test/domain/entities/chapter.dart';
 import 'package:driving_test/domain/entities/question.dart';
+import 'package:driving_test/domain/entities/theory_part.dart';
 
 enum ChapterStateStatus {
   initial,
@@ -8,17 +9,28 @@ enum ChapterStateStatus {
   loadFailure,
 }
 
+enum ReviewStateStatus {
+  initial,
+  loading,
+  loadSuccess,
+  loadFailure,
+}
+
 class ChapterState {
-  final ChapterStateStatus status;
+  final ChapterStateStatus chapterStatus;
+  final ReviewStateStatus reviewStatus;
   final List<Chapter> chapterList;
   final Map<Chapter, List<Question>> chapterMap;
+  final Map<Chapter, List<TheoryPart>> theoryMap;
   final Exception? error;
   final List<String> reviewList;
 
   const ChapterState._({
-    this.status = ChapterStateStatus.initial,
+    this.chapterStatus = ChapterStateStatus.initial,
+    this.reviewStatus = ReviewStateStatus.initial,
     this.chapterList = const [],
     this.chapterMap = const {},
+    this.theoryMap = const {},
     this.error,
     this.reviewList = const [],
   });
@@ -26,40 +38,67 @@ class ChapterState {
   const ChapterState.initial() : this._();
 
   ChapterState copyWith({
-    ChapterStateStatus? status,
+    ChapterStateStatus? chapterStatus,
+    ReviewStateStatus? reviewStatus,
     List<Chapter>? chapterList,
     Map<Chapter, List<Question>>? chapterMap,
+    Map<Chapter, List<TheoryPart>>? theoryMap,
     Exception? error,
     List<String>? reviewList,
   }) {
     return ChapterState._(
-      status: status ?? this.status,
+      chapterStatus: chapterStatus ?? this.chapterStatus,
+      reviewStatus: reviewStatus ?? this.reviewStatus,
       chapterList: chapterList ?? this.chapterList,
       chapterMap: chapterMap ?? this.chapterMap,
+      theoryMap: theoryMap ?? this.theoryMap,
       error: error ?? this.error,
       reviewList: reviewList ?? this.reviewList,
     );
   }
 
-  ChapterState asLoading() {
+  ChapterState asChapterLoading() {
     return copyWith(
-      status: ChapterStateStatus.loading,
+      chapterStatus: ChapterStateStatus.loading,
     );
   }
 
-  ChapterState asLoadSuccess(List<Chapter> chapterList,
-      Map<Chapter, List<Question>> chapterMap, List<String> reviewList) {
+  ChapterState asReviewLoading() {
     return copyWith(
-      status: ChapterStateStatus.loadSuccess,
+      reviewStatus: ReviewStateStatus.loading,
+    );
+  }
+
+  ChapterState asChapterLoadSuccess(
+    List<Chapter> chapterList,
+    Map<Chapter, List<Question>> chapterMap,
+    Map<Chapter, List<TheoryPart>> theoryMap,
+  ) {
+    return copyWith(
+      chapterStatus: ChapterStateStatus.loadSuccess,
       chapterList: chapterList,
       chapterMap: chapterMap,
+      theoryMap: theoryMap,
+    );
+  }
+
+  ChapterState asReviewLoadSuccess(List<String> reviewList) {
+    return copyWith(
+      reviewStatus: ReviewStateStatus.loadSuccess,
       reviewList: reviewList,
     );
   }
 
-  ChapterState asLoadFailure(Exception error) {
+  ChapterState asChapterLoadFailure(Exception error) {
     return copyWith(
-      status: ChapterStateStatus.loadFailure,
+      chapterStatus: ChapterStateStatus.loadFailure,
+      error: error,
+    );
+  }
+
+  ChapterState asReviewLoadFailure(Exception error) {
+    return copyWith(
+      reviewStatus: ReviewStateStatus.loadFailure,
       error: error,
     );
   }
@@ -74,6 +113,9 @@ class ChapterState {
   }
 
   List<Question> createExam(int noOfQuestions) {
+    if(chapterList.isEmpty){
+      return List.empty();
+    }
     final int eachChapter = (noOfQuestions / chapterList.length).ceil();
     final List<Question> examQuestions = [];
     for (var questionList in chapterMap.values) {

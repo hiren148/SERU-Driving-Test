@@ -1,16 +1,25 @@
+import 'dart:async';
+
 import 'package:driving_test/config/colors.dart';
 import 'package:driving_test/config/constants.dart';
 import 'package:driving_test/config/images.dart';
 import 'package:driving_test/domain/entities/chapter.dart';
 import 'package:driving_test/domain/entities/question.dart';
+import 'package:driving_test/domain/entities/theory_part.dart';
 import 'package:driving_test/routes.dart';
+import 'package:driving_test/state/chapters/chapter_bloc.dart';
+import 'package:driving_test/state/chapters/chapter_event.dart';
 import 'package:driving_test/state/chapters/chapter_selector.dart';
+import 'package:driving_test/state/chapters/chapter_state.dart';
+import 'package:driving_test/state/iap/iap_bloc.dart';
+import 'package:driving_test/state/iap/iap_event.dart';
 import 'package:driving_test/state/iap/iap_selector.dart';
 import 'package:driving_test/state/learn/learn_bloc.dart';
 import 'package:driving_test/state/learn/learn_event.dart';
 import 'package:driving_test/ui/widgets/illustration_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 
 class LearnScreen extends StatefulWidget {
   const LearnScreen({Key? key}) : super(key: key);
@@ -22,23 +31,36 @@ class LearnScreen extends StatefulWidget {
 class _LearnScreenState extends State<LearnScreen> {
   LearnBloc get learnBloc => context.read<LearnBloc>();
 
+  IAPBloc get iapBloc => context.read<IAPBloc>();
+
+  ChapterBloc get chapterBloc => context.read<ChapterBloc>();
+
   @override
-  Widget build(BuildContext context) {
-    return ChapterListSelector(
-      (chapterMap) => ListView.builder(
-        itemCount: 1 + chapterMap.length,
-        itemBuilder: ((_, index) => index == 0
-            ? const IllustrationCardView(image: AppImages.bannerLearn)
-            : _buildChapterWidget(
-                chapterMap,
-                index,
-              )),
-      ),
-    );
+  void initState() {
+    scheduleMicrotask(() {
+      chapterBloc.add(ChapterLoadStarted());
+    });
+    super.initState();
   }
 
-  void _onPressedTheory(Chapter chapter) {
-    learnBloc.add(LoadTheory(chapter: chapter));
+  @override
+  Widget build(BuildContext context) {
+    return ChapterStateStatusSelector((chapterStatus) {
+      switch (chapterStatus) {
+        case ChapterStateStatus.loading:
+          return _buildLoading();
+        case ChapterStateStatus.loadSuccess:
+          return _buildChapterList();
+        case ChapterStateStatus.loadFailure:
+          return _buildError();
+        default:
+          return const SizedBox.shrink();
+      }
+    });
+  }
+
+  void _onPressedTheory(Chapter chapter, List<TheoryPart> theoryParts) {
+    learnBloc.add(LoadTheory(chapter: chapter, theoryParts: theoryParts));
     AppNavigator.push(
       Routes.theory,
     );
@@ -87,7 +109,10 @@ class _LearnScreenState extends State<LearnScreen> {
   }
 
   Widget _buildChapterWidget(
-      Map<Chapter, List<Question>> chapterMap, int index) {
+    Map<Chapter, List<Question>> chapterMap,
+    Map<Chapter, List<TheoryPart>> theoryMap,
+    int index,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(
         left: 8.0,
@@ -133,7 +158,8 @@ class _LearnScreenState extends State<LearnScreen> {
             child: GestureDetector(
               onTap: () {
                 _onPressedTheory(
-                  chapterMap.keys.elementAt(index - 1),
+                  theoryMap.keys.elementAt(index - 1),
+                  theoryMap.values.elementAt(index - 1),
                 );
               },
               child: Card(
@@ -162,14 +188,16 @@ class _LearnScreenState extends State<LearnScreen> {
               ),
             ),
           ),
-          IAPStatusSelector((purchasePending, _) => Padding(
+          IAPStatusSelector((purchasePending, products) => Padding(
                 padding: const EdgeInsets.only(
                   left: 16.0,
                   right: 16.0,
                 ),
                 child: GestureDetector(
                   onTap: () {
-                    if (!purchasePending) {
+                    if (purchasePending) {
+                      _showIAPDialog(context, products);
+                    } else {
                       _onPressMCQ(chapterMap.keys.elementAt(index - 1),
                           chapterMap.values.elementAt(index - 1));
                     }
@@ -202,14 +230,16 @@ class _LearnScreenState extends State<LearnScreen> {
                   ),
                 ),
               )),
-          IAPStatusSelector((purchasePending, _) => Padding(
+          IAPStatusSelector((purchasePending, products) => Padding(
                 padding: const EdgeInsets.only(
                   left: 16.0,
                   right: 16.0,
                 ),
                 child: GestureDetector(
                   onTap: () {
-                    if (!purchasePending) {
+                    if (purchasePending) {
+                      _showIAPDialog(context, products);
+                    } else {
                       _onPressFillBlank(chapterMap.keys.elementAt(index - 1),
                           chapterMap.values.elementAt(index - 1));
                     }
@@ -244,6 +274,107 @@ class _LearnScreenState extends State<LearnScreen> {
               )),
         ],
       ),
+    );
+  }
+
+  void _showIAPDialog(BuildContext context, List<Offering> products) {
+    // set up the button
+    Widget okButton = TextButton(
+      child: const Text("OK"),
+      onPressed: () {
+        AppNavigator.pop();
+        if (products.isNotEmpty &&
+            products.first.availablePackages.isNotEmpty) {
+          iapBloc.add(BuyNonConsumable(
+              purchaseParam: products.first.availablePackages.first));
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Subscription is not available at moment!',
+              ),
+            ),
+          );
+        }
+      },
+    );
+
+    Widget cancelButton = TextButton(
+      child: const Text('CANCEL'),
+      onPressed: () {
+        AppNavigator.pop();
+      },
+    );
+
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: const Text("Upgrade"),
+      content: const Text("Upgrade now to unlock all features."),
+      actions: [
+        cancelButton,
+        okButton,
+      ],
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+
+  Widget _buildChapterList() {
+    return ChapterListSelector(
+      (chapterMap, theoryMap) => ListView.builder(
+        itemCount: 1 + chapterMap.length,
+        itemBuilder: ((_, index) => index == 0
+            ? const IllustrationCardView(image: AppImages.bannerLearn)
+            : _buildChapterWidget(
+                chapterMap,
+                theoryMap,
+                index,
+              )),
+      ),
+    );
+  }
+
+  Widget _buildLoading() {
+    return const Center(
+      child: CircularProgressIndicator(),
+    );
+  }
+
+  Widget _buildError() {
+    return Column(
+      children: [
+        const Icon(
+          Icons.warning_amber_rounded,
+          size: 72,
+          color: Colors.black26,
+        ),
+        const SizedBox(
+          height: 8,
+        ),
+        const Text(
+          'Oops!! Something went wrong!',
+        ),
+        const SizedBox(
+          height: 16,
+        ),
+        ElevatedButton(
+          onPressed: () {
+            chapterBloc.add(ChapterLoadStarted());
+          },
+          style: ElevatedButton.styleFrom(
+            primary: AppColors.matisse,
+          ),
+          child: const Text(
+            'Try again',
+          ),
+        ),
+      ],
     );
   }
 }

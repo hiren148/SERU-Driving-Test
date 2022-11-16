@@ -4,6 +4,7 @@ import 'package:driving_test/state/iap/iap_event.dart';
 import 'package:driving_test/state/iap/iap_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -43,6 +44,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                   ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(
+            height: 16,
+          ),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: <Widget>[
+                  TextButton(
+                      onPressed: () {
+                        _launchURL(
+                            'https://serutfl.blogspot.com/2022/10/privacy-policy.html');
+                      },
+                      child: Text('Privacy Policy')),
+                  TextButton(
+                      onPressed: () {
+                        _launchURL(
+                            'https://serutfl.blogspot.com/2022/10/privacy-policy.html');
+                      },
+                      child: Text('Terms of use')),
+                  TextButton(
+                      onPressed: () {
+                        iapBloc.add(RestorePurchase());
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Purchase restored. You are not subscribed user!',
+                            ),
+                          ),
+                        );
+                      },
+                      child: const Text('Restore Purchases')),
                 ],
               ),
             ),
@@ -144,46 +181,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
             height: 16,
           ),
           IAPStatusSelector(
-            (purchasePending, products) => ElevatedButton(
-              onPressed: () {
-                if (purchasePending) {
-                  if (products.isNotEmpty) {
-                    if (products.first.availablePackages.isNotEmpty) {
-                      iapBloc.add(BuyNonConsumable(
-                          purchaseParam:
-                              products.first.availablePackages.first));
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Subscription is not available at moment!',
+            (purchasePending, products) => purchasePending
+                ? ElevatedButton(
+                    onPressed: () {
+                      if (products.isNotEmpty &&
+                          products.first.availablePackages.isNotEmpty) {
+                        iapBloc.add(BuyNonConsumable(
+                            purchaseParam:
+                                products.first.availablePackages.first));
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Subscription is not available at moment!',
+                            ),
                           ),
-                        ),
-                      );
-                    }
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Subscription is not available at moment!',
-                        ),
-                      ),
-                    );
-                  }
-                } else {
-                  iapBloc.add(RestorePurchase());
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                primary: AppColors.matisse,
-              ),
-              child: Text(
-                purchasePending ? 'Subscribe Now' : 'Restore Purchase',
-              ),
-            ),
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      primary: AppColors.matisse,
+                    ),
+                    child: const Text(
+                      'Upgrade Now',
+                    ),
+                  )
+                : const SizedBox.shrink(),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _launchURL(String url) async {
+    final Uri uri = Uri.parse(url);
+    await launchUrl(uri,mode: LaunchMode.externalApplication);
   }
 }

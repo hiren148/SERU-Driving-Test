@@ -2,6 +2,7 @@ import 'package:driving_test/domain/entities/chapter.dart';
 import 'package:driving_test/domain/entities/fill_blanks_part.dart';
 import 'package:driving_test/domain/entities/option.dart';
 import 'package:driving_test/domain/entities/question.dart';
+import 'package:driving_test/domain/entities/theory_part.dart';
 import 'package:driving_test/state/learn/learn_bloc.dart';
 import 'package:driving_test/state/learn/learn_state.dart';
 import 'package:flutter/material.dart';
@@ -85,4 +86,12 @@ class QuestionIndexSelectorState {
   final int totalQuestions;
 
   const QuestionIndexSelectorState(this.currentIndex, this.totalQuestions);
+}
+
+class TheoryPartListSelector extends LearnStateSelector<List<TheoryPart>> {
+  TheoryPartListSelector(Widget Function(List<TheoryPart>) builder)
+      : super(
+          selector: (state) => state.theoryParts,
+          builder: builder,
+        );
 }
