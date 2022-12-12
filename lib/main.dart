@@ -11,18 +11,15 @@ import 'package:driving_test/state/chapters/chapter_bloc.dart';
 import 'package:driving_test/state/exam/exam_bloc.dart';
 import 'package:driving_test/state/iap/iap_bloc.dart';
 import 'package:driving_test/state/learn/learn_bloc.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  // await Firebase.initializeApp(
+  //   options: DefaultFirebaseOptions.currentPlatform,
+  // );
 
   if (Platform.isIOS || Platform.isMacOS) {
     StoreConfig(
