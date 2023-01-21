@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:driving_test/config/colors.dart';
+import 'package:driving_test/config/constants.dart';
 import 'package:driving_test/config/images.dart';
+import 'package:driving_test/routes.dart';
 import 'package:driving_test/state/bottomitem/bottom_item_cubit.dart';
 import 'package:driving_test/state/chapters/chapter_bloc.dart';
 import 'package:driving_test/state/chapters/chapter_event.dart';
@@ -14,6 +17,8 @@ import 'package:driving_test/ui/widgets/illustration_card.dart';
 import 'package:driving_test/ui/widgets/test_type_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -63,9 +68,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     onPressed: () {
                       if (products.isNotEmpty &&
                           products.first.availablePackages.isNotEmpty) {
-                        iapBloc.add(BuyNonConsumable(
-                            purchaseParam:
-                                products.first.availablePackages.first));
+                        if(Platform.isIOS){
+                          _showDisclosure(context,products);
+                        }else {
+                          _initIAPFlow(products);
+                        }
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
@@ -180,5 +187,82 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
       ],
     );
+  }
+
+  void _initIAPFlow(List<Offering> products) {
+    if (products.isNotEmpty &&
+        products.first.availablePackages.isNotEmpty) {
+      iapBloc.add(BuyNonConsumable(
+          purchaseParam: products.first.availablePackages.first));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Subscription is not available at moment!',
+          ),
+        ),
+      );
+    }
+  }
+
+  void _showDisclosure(BuildContext context, List<Offering> products) {
+    Widget okButton = TextButton(
+      child: const Text('CONFIRM'),
+      onPressed: () {
+        AppNavigator.pop();
+        _initIAPFlow(products);
+      },
+    );
+
+    Widget privacyPolicyButton = TextButton(
+      child: const Text('PRIVACY POLICY'),
+      onPressed: () {
+        AppNavigator.pop();
+        _launchURL(
+            AppConstants.privacyPolicyURL);
+      },
+    );
+
+    Widget termsOfUseButton = TextButton(
+      child: const Text('TERMS OF USE'),
+      onPressed: () {
+        AppNavigator.pop();
+        _launchURL(
+            AppConstants.termsOfUseURL);
+      },
+    );
+
+    Widget cancelButton = TextButton(
+      child: const Text('CANCEL'),
+      onPressed: () {
+        AppNavigator.pop();
+      },
+    );
+    String period =products.first.availablePackages.first.packageType.name;
+    String purchaseAmount =products.first.availablePackages.first.product.priceString;
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: const Text("DISCLOSURE"),
+      content: Text("A $purchaseAmount $period purchase will be applied to your iTunes account on confirmation.\n\nSubscriptions will automatically renew unless canceled within 24-hours before the end of the current period. You can cancel anytime with your iTunes account settings. Any unused portion of a free trial will be forfeited if you purchase a subscription."),
+      actions: [
+        cancelButton,
+        termsOfUseButton,
+        privacyPolicyButton,
+        okButton,
+      ],
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+
+  Future<void> _launchURL(String url) async {
+    final Uri uri = Uri.parse(url);
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 }

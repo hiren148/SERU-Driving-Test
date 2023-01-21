@@ -18,4 +18,8 @@ class AppConstants {
 
   ////TODO: add the Google API key for your app from the RevenueCat dashboard: https://app.revenuecat.com
   static const googleApiKey = 'goog_api_key';
+
+  static const privacyPolicyURL = 'https://serutfl.blogspot.com/2022/10/privacy-policy.html';
+
+  static const termsOfUseURL = 'https://serutfl.blogspot.com/2022/12/terms-of-use-eula-seru-test-app.html';
 }
