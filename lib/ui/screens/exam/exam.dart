@@ -17,6 +17,7 @@ import 'package:driving_test/state/iap/iap_event.dart';
 import 'package:driving_test/state/iap/iap_selector.dart';
 import 'package:driving_test/ui/widgets/illustration_card.dart';
 import 'package:driving_test/ui/widgets/test_type_card.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:purchases_flutter/offering_wrapper.dart';
@@ -69,16 +70,15 @@ class _ExamScreenState extends State<ExamScreen> {
   }
 
   void _showIAPDialog(BuildContext context, List<Offering> products) {
-    if (products.isNotEmpty &&
-        products.first.availablePackages.isNotEmpty) {
+    if (products.isNotEmpty && products.first.availablePackages.isNotEmpty) {
       // set up the button
       Widget okButton = TextButton(
         child: const Text("OK"),
         onPressed: () {
           AppNavigator.pop();
-          if(Platform.isIOS){
-            _showDisclosure(context,products);
-          }else {
+          if (Platform.isIOS) {
+            _showDisclosure(context, products);
+          } else {
             _initIAPFlow(products);
           }
         },
@@ -117,7 +117,6 @@ class _ExamScreenState extends State<ExamScreen> {
         ),
       );
     }
-
   }
 
   Widget _buildExamList() {
@@ -215,8 +214,7 @@ class _ExamScreenState extends State<ExamScreen> {
   }
 
   void _initIAPFlow(List<Offering> products) {
-    if (products.isNotEmpty &&
-        products.first.availablePackages.isNotEmpty) {
+    if (products.isNotEmpty && products.first.availablePackages.isNotEmpty) {
       iapBloc.add(BuyNonConsumable(
           purchaseParam: products.first.availablePackages.first));
     } else {
@@ -239,40 +237,50 @@ class _ExamScreenState extends State<ExamScreen> {
       },
     );
 
-    Widget privacyPolicyButton = TextButton(
-      child: const Text('PRIVACY POLICY'),
-      onPressed: () {
-        AppNavigator.pop();
-        _launchURL(
-            AppConstants.privacyPolicyURL);
-      },
-    );
-
-    Widget termsOfUseButton = TextButton(
-      child: const Text('TERMS OF USE'),
-      onPressed: () {
-        AppNavigator.pop();
-        _launchURL(
-            AppConstants.termsOfUseURL);
-      },
-    );
-
     Widget cancelButton = TextButton(
       child: const Text('CANCEL'),
       onPressed: () {
         AppNavigator.pop();
       },
     );
-    String period =products.first.availablePackages.first.packageType.name;
-    String purchaseAmount =products.first.availablePackages.first.product.priceString;
+    String period = products.first.availablePackages.first.packageType.name;
+    String purchaseAmount =
+        products.first.availablePackages.first.product.priceString;
+
+    TextStyle defaultStyle = const TextStyle(color: AppColors.black);
+    TextStyle linkStyle = const TextStyle(color: AppColors.matisse);
+
     // set up the AlertDialog
     AlertDialog alert = AlertDialog(
       title: const Text("DISCLOSURE"),
-      content: Text("A $purchaseAmount $period purchase will be applied to your iTunes account on confirmation.\n\nSubscriptions will automatically renew unless canceled within 24-hours before the end of the current period. You can cancel anytime with your iTunes account settings. Any unused portion of a free trial will be forfeited if you purchase a subscription."),
+      content: RichText(
+        text: TextSpan(children: <TextSpan>[
+          TextSpan(
+            style: defaultStyle,
+            text:
+                'A $purchaseAmount $period purchase will be applied to your iTunes account on confirmation.\n\nSubscriptions will automatically renew unless canceled within 24-hours before the end of the current period. You can cancel anytime with your iTunes account settings. Any unused portion of a free trial will be forfeited if you purchase a subscription.\n\nFor more information, see our ',
+          ),
+          TextSpan(
+              style: linkStyle,
+              text: 'Privacy Policy',
+              recognizer: TapGestureRecognizer()
+                ..onTap = () {
+                  AppNavigator.pop();
+                  _launchURL(AppConstants.privacyPolicyURL);
+                }),
+          TextSpan(style: defaultStyle, text: ' and '),
+          TextSpan(
+              style: linkStyle,
+              text: 'Terms of Use',
+              recognizer: TapGestureRecognizer()
+                ..onTap = () {
+                  AppNavigator.pop();
+                  _launchURL(AppConstants.termsOfUseURL);
+                })
+        ]),
+      ),
       actions: [
         cancelButton,
-        termsOfUseButton,
-        privacyPolicyButton,
         okButton,
       ],
     );
