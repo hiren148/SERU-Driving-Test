@@ -1,3 +1,4 @@
+import 'package:driving_test/data/source/local/local_datasource.dart';
 import 'package:driving_test/data/source/network/network_datasource.dart';
 import 'package:driving_test/data/source/network_to_entity_mapper.dart';
 import 'package:driving_test/domain/entities/chapter.dart';
@@ -16,19 +17,30 @@ abstract class QuestionRepository {
 
 class QuestionDefaultRepository extends QuestionRepository {
   final NetworkDataSource networkDataSource;
+  final LocalDatasource localDatasource;
 
-  QuestionDefaultRepository(this.networkDataSource);
+  QuestionDefaultRepository(this.networkDataSource, this.localDatasource);
 
   @override
   Future<List<Chapter>> getChapterList() async {
+    if (await localDatasource.hasData()) {
+      return localDatasource.getChapterList();
+    }
     final networkChapters = await networkDataSource.getChapterList();
-    return networkChapters.map((e) => e.toEntity()).toList();
+    final chapterList = networkChapters.map((e) => e.toEntity()).toList();
+    localDatasource.saveChapterList(chapterList);
+    return chapterList;
   }
 
   @override
   Future<List<Question>> getQuestionsByChapter(Chapter chapter) async {
+    if (await localDatasource.hasData()) {
+      return localDatasource.getQuestionsByChapter(chapter);
+    }
     final networkQuestions = await networkDataSource.getQuestionData(chapter);
-    return networkQuestions.map((e) => e.toEntity()).toList();
+    final questionList = networkQuestions.map((e) => e.toEntity()).toList();
+    localDatasource.saveQuestionsByChapter(chapter, questionList);
+    return questionList;
   }
 
   @override

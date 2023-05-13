@@ -1,4 +1,5 @@
 import 'package:driving_test/domain/entities/chapter.dart';
+import 'package:driving_test/domain/entities/option.dart';
 import 'package:driving_test/domain/entities/question.dart';
 import 'package:driving_test/domain/entities/theory_part.dart';
 
@@ -29,3 +30,17 @@ class LoadTheory extends LearnEvent {
 class NextClicked extends LearnEvent {}
 
 class PrevClicked extends LearnEvent {}
+
+class SubmitClicked extends LearnEvent {}
+
+class OptionSelected extends LearnEvent {
+  final Option option;
+
+  OptionSelected(this.option);
+}
+
+class BlankSelected extends LearnEvent {
+  final Option mappedOption;
+
+  BlankSelected({required this.mappedOption});
+}

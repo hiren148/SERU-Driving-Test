@@ -150,3 +150,12 @@ class QuestionIndexSelectorState {
 
   const QuestionIndexSelectorState(this.currentIndex, this.totalQuestion);
 }
+
+class ExamStateStatusSelector
+    extends ExamStateSelector<ExamStatusState> {
+  ExamStateStatusSelector(Widget Function(ExamStatusState) builder)
+      : super(
+          selector: (state) => state.examStatus,
+          builder: builder,
+        );
+}

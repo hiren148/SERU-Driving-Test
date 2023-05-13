@@ -5,7 +5,6 @@ import 'package:driving_test/domain/entities/theory_part.dart';
 import 'package:driving_test/state/chapters/chapter_event.dart';
 import 'package:driving_test/state/chapters/chapter_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:stream_transform/stream_transform.dart';
 
 class ChapterBloc extends Bloc<ChapterEvent, ChapterState> {

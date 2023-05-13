@@ -59,14 +59,6 @@ class ChapterMapState {
   ChapterMapState(this.questionMap, this.theoryMap);
 }
 
-class CreateExamSelector extends ChapterStateSelector<List<Question>> {
-  CreateExamSelector(int noOfQuestions, Widget Function(List<Question>) builder)
-      : super(
-          selector: (state) => state.createExam(noOfQuestions),
-          builder: builder,
-        );
-}
-
 class ReviewListSelector extends ChapterStateSelector<List<String>> {
   ReviewListSelector(Widget Function(List<String>) builder)
       : super(
