@@ -112,21 +112,7 @@ class ChapterState {
     return reviews;
   }
 
-  List<Question> createExam(int noOfQuestions) {
-    if(chapterList.isEmpty){
-      return List.empty();
-    }
-    final int eachChapter = (noOfQuestions / chapterList.length).ceil();
-    final List<Question> examQuestions = [];
-    for (var questionList in chapterMap.values) {
-      final indices = _generateUniqueIndices(eachChapter, questionList.length);
-      for (var index in indices) {
-        examQuestions.add(questionList.elementAt(index));
-      }
-    }
-    examQuestions.shuffle();
-    return examQuestions;
-  }
+
 
   List<int> _generateUniqueIndices(int noOfRandom, int length) {
     var indexList = List.generate(length, (index) => index);

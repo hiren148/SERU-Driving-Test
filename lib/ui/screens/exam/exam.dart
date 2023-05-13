@@ -4,14 +4,12 @@ import 'dart:io';
 import 'package:driving_test/config/colors.dart';
 import 'package:driving_test/config/constants.dart';
 import 'package:driving_test/config/images.dart';
-import 'package:driving_test/domain/entities/question.dart';
 import 'package:driving_test/routes.dart';
 import 'package:driving_test/state/chapters/chapter_bloc.dart';
 import 'package:driving_test/state/chapters/chapter_event.dart';
 import 'package:driving_test/state/chapters/chapter_selector.dart';
 import 'package:driving_test/state/chapters/chapter_state.dart';
-import 'package:driving_test/state/exam/exam_bloc.dart';
-import 'package:driving_test/state/exam/exam_event.dart';
+import 'package:driving_test/state/countdowntimer/countdown_cubit.dart';
 import 'package:driving_test/state/iap/iap_bloc.dart';
 import 'package:driving_test/state/iap/iap_event.dart';
 import 'package:driving_test/state/iap/iap_selector.dart';
@@ -31,8 +29,6 @@ class ExamScreen extends StatefulWidget {
 }
 
 class _ExamScreenState extends State<ExamScreen> {
-  ExamBloc get examBloc => context.read<ExamBloc>();
-
   IAPBloc get iapBloc => context.read<IAPBloc>();
 
   ChapterBloc get chapterBloc => context.read<ChapterBloc>();
@@ -61,9 +57,8 @@ class _ExamScreenState extends State<ExamScreen> {
     });
   }
 
-  void _onPressedStartTest(List<Question> questions) {
-    questions.shuffle();
-    examBloc.add(LoadQuestions(questions: questions));
+  void _onPressedStartTest() {
+    context.read<CountdownCubit>().startTimer();
     AppNavigator.push(
       Routes.examQuestionnaire,
     );
@@ -120,59 +115,29 @@ class _ExamScreenState extends State<ExamScreen> {
   }
 
   Widget _buildExamList() {
-    return ListView(
-      children: [
-        const IllustrationCardView(image: AppImages.bannerTest),
-        IAPStatusSelector((purchasePending, products) => CreateExamSelector(
-              20,
-              (questions) => TestTypeCardView(
-                title: 'Start new test',
-                subtitle: '20 questions',
+    return ListView.builder(
+        itemCount: 11,
+        itemBuilder: (_, index) {
+          if (index == 0) {
+            return const IllustrationCardView(image: AppImages.bannerTest);
+          } else {
+            return IAPStatusSelector(
+              (purchasePending, products) => TestTypeCardView(
+                title: 'Test $index',
+                subtitle: '37 questions, 56 Minute',
                 image: AppImages.imgFillBlank,
                 onPressed: () {
                   if (purchasePending) {
                     _showIAPDialog(context, products);
                   } else {
-                    _onPressedStartTest(questions);
+                    _onPressedStartTest();
                   }
                 },
                 purchasePending: purchasePending,
               ),
-            )),
-        IAPStatusSelector((purchasePending, products) => CreateExamSelector(
-              30,
-              (questions) => TestTypeCardView(
-                title: 'Start new test',
-                subtitle: '30 questions',
-                image: AppImages.imgFillBlank,
-                onPressed: () {
-                  if (purchasePending) {
-                    _showIAPDialog(context, products);
-                  } else {
-                    _onPressedStartTest(questions);
-                  }
-                },
-                purchasePending: purchasePending,
-              ),
-            )),
-        IAPStatusSelector((purchasePending, products) => CreateExamSelector(
-              50,
-              (questions) => TestTypeCardView(
-                title: 'Start new test',
-                subtitle: '50 questions',
-                image: AppImages.imgFillBlank,
-                onPressed: () {
-                  if (purchasePending) {
-                    _showIAPDialog(context, products);
-                  } else {
-                    _onPressedStartTest(questions);
-                  }
-                },
-                purchasePending: purchasePending,
-              ),
-            )),
-      ],
-    );
+            );
+          }
+        });
   }
 
   Widget _buildLoading() {

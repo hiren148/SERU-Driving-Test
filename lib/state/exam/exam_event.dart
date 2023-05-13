@@ -1,15 +1,10 @@
 import 'package:driving_test/domain/entities/option.dart';
-import 'package:driving_test/domain/entities/question.dart';
 
 abstract class ExamEvent {
   const ExamEvent();
 }
 
-class LoadQuestions extends ExamEvent {
-  final List<Question> questions;
-
-  LoadQuestions({required this.questions});
-}
+class LoadQuestions extends ExamEvent {}
 
 class OptionSelected extends ExamEvent {
   final Option option;

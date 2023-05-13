@@ -9,8 +9,16 @@ enum QuestionStatusState {
   submitted,
 }
 
+enum ExamStatusState {
+  initial,
+  loading,
+  loadSuccess,
+  loadFailure,
+}
+
 class ExamState {
   final QuestionStatusState questionStatus;
+  final ExamStatusState examStatus;
   final List<Question> questions;
   final int selectedQuestionIndex;
   final Map<Question, List<Option>> selectedAnswerMap;
@@ -28,6 +36,7 @@ class ExamState {
 
   const ExamState._({
     this.questionStatus = QuestionStatusState.initial,
+    this.examStatus = ExamStatusState.initial,
     this.questions = const [],
     this.selectedQuestionIndex = 0,
     this.selectedAnswerMap = const {},
@@ -41,6 +50,7 @@ class ExamState {
 
   ExamState copyWith({
     QuestionStatusState? questionStatus,
+    ExamStatusState? examStatusState,
     List<Question>? questions,
     int? selectedQuestionIndex,
     Map<Question, List<Option>>? selectedAnswerMap,
@@ -51,6 +61,7 @@ class ExamState {
   }) {
     return ExamState._(
       questionStatus: questionStatus ?? this.questionStatus,
+      examStatus: examStatusState ?? examStatus,
       questions: questions ?? this.questions,
       selectedQuestionIndex:
           selectedQuestionIndex ?? this.selectedQuestionIndex,
@@ -60,8 +71,27 @@ class ExamState {
       selectedOptions: selectedOptions ?? this.selectedOptions,
       selectedFillBlankOptions:
           selectedFillBlankOptions ?? this.selectedFillBlankOptions,
-      fillBlankSelectedOption:
-          fillBlankSelectedOption ,
+      fillBlankSelectedOption: fillBlankSelectedOption,
+    );
+  }
+
+  ExamState asExamLoading() {
+    return copyWith(
+      questionStatus: QuestionStatusState.initial,
+      questions: const [],
+      selectedQuestionIndex: 0,
+      selectedAnswerMap: const {},
+      selectedFillBlankAnswerMap: const {},
+      selectedOptions: const [],
+      selectedFillBlankOptions: const {},
+      fillBlankSelectedOption: null,
+      examStatusState: ExamStatusState.loading,
+    );
+  }
+
+  ExamState asExamLoadFailure(Exception error) {
+    return copyWith(
+      examStatusState: ExamStatusState.loadFailure,
     );
   }
 
@@ -70,6 +100,7 @@ class ExamState {
       questions: questions,
       selectedQuestionIndex: 0,
       questionStatus: QuestionStatusState.initial,
+      examStatusState: ExamStatusState.loadSuccess,
       selectedOptions: [],
       selectedFillBlankOptions: {},
       selectedAnswerMap: {},

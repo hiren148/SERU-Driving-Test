@@ -5,9 +5,11 @@ import 'package:driving_test/config/constants.dart';
 import 'package:driving_test/config/store_config.dart';
 import 'package:driving_test/core/network.dart';
 import 'package:driving_test/data/repositories/question_repository.dart';
+import 'package:driving_test/data/source/local/local_datasource.dart';
 import 'package:driving_test/data/source/network/network_datasource.dart';
 import 'package:driving_test/state/bottomitem/bottom_item_cubit.dart';
 import 'package:driving_test/state/chapters/chapter_bloc.dart';
+import 'package:driving_test/state/countdowntimer/countdown_cubit.dart';
 import 'package:driving_test/state/exam/exam_bloc.dart';
 import 'package:driving_test/state/iap/iap_bloc.dart';
 import 'package:driving_test/state/learn/learn_bloc.dart';
@@ -51,12 +53,17 @@ void main() async {
               NetworkDataSource(context.read<NetworkManager>()),
         ),
 
+        RepositoryProvider<LocalDatasource>(
+          create: (_) => LocalDatasource([],{}),
+        ),
+
         ///
         /// Repositories
         ///
         RepositoryProvider<QuestionRepository>(
           create: (context) => QuestionDefaultRepository(
             context.read<NetworkDataSource>(),
+            context.read<LocalDatasource>(),
           ),
         ),
       ],
@@ -68,12 +75,15 @@ void main() async {
           BlocProvider<BottomItemCubit>(
             create: (_) => BottomItemCubit(),
           ),
+          BlocProvider<CountdownCubit>(
+            create: (_) => CountdownCubit(),
+          ),
           BlocProvider<ChapterBloc>(
             create: (context) =>
                 ChapterBloc(context.read<QuestionRepository>()),
           ),
           BlocProvider<LearnBloc>(create: (_) => LearnBloc()),
-          BlocProvider<ExamBloc>(create: (_) => ExamBloc()),
+          BlocProvider<ExamBloc>(create: (context) => ExamBloc(context.read<QuestionRepository>())),
           BlocProvider<IAPBloc>(create: (_) => IAPBloc()),
         ],
         child: const DrivingTestApp(),

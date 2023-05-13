@@ -1,10 +1,13 @@
 import 'package:driving_test/config/colors.dart';
 import 'package:driving_test/config/constants.dart';
 import 'package:driving_test/domain/entities/fill_blanks_part.dart';
+import 'package:driving_test/domain/entities/option.dart';
 import 'package:driving_test/domain/entities/question.dart';
+import 'package:driving_test/state/exam/exam_state.dart';
 import 'package:driving_test/state/learn/learn_bloc.dart';
 import 'package:driving_test/state/learn/learn_event.dart';
 import 'package:driving_test/state/learn/learn_selector.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -69,19 +72,35 @@ class _LearnQuestionnaireScreenState extends State<LearnQuestionnaireScreen> {
                           itemCount: options.length,
                           itemBuilder: (_, index) {
                             final option = options[index];
-                            return Card(
-                              shape: RoundedRectangleBorder(
-                                side: BorderSide(
-                                  color: option.isAnswer
-                                      ? Colors.green
-                                      : Colors.transparent,
-                                  width: 2.0,
-                                ),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Text(
-                                  option.option,
+                            return GestureDetector(
+                              onTap: () =>
+                                  learnBloc.add(OptionSelected(option)),
+                              child: OptionBorderColorStatusStateSelector(
+                                (isFillBlank,
+                                        questionStatus,
+                                        selectedOptions,
+                                        fillBlankOption,
+                                        selectedFillBlankAnswer) =>
+                                    Card(
+                                  shape: RoundedRectangleBorder(
+                                    side: BorderSide(
+                                      color: _buildBorderColor(
+                                        isFillBlank,
+                                        questionStatus,
+                                        selectedOptions,
+                                        fillBlankOption,
+                                        selectedFillBlankAnswer,
+                                        option,
+                                      ),
+                                      width: 2.0,
+                                    ),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: Text(
+                                      option.option,
+                                    ),
+                                  ),
                                 ),
                               ),
                             );
@@ -100,51 +119,80 @@ class _LearnQuestionnaireScreenState extends State<LearnQuestionnaireScreen> {
           const SizedBox(
             height: 16,
           ),
-          FlagFirstOrLastQuestionSelector((isFirst, isLast) => Row(
-                children: [
-                  const SizedBox(
-                    width: 16,
-                  ),
-                  isFirst
-                      ? const SizedBox.shrink()
-                      : Expanded(
-                          child: ElevatedButton(
-                            onPressed: () {
-                              learnBloc.add(PrevClicked());
-                            },
-                            style: ElevatedButton.styleFrom(
-                              primary: AppColors.matisse,
-                            ),
-                            child: const Text(
-                              'Prev',
-                            ),
-                          ),
+          Row(
+            children: [
+              const SizedBox(
+                width: 16,
+              ),
+              FlagFirstOrLastQuestionSelector(
+                  (isFirst, isLast, questionStatus) {
+                switch (questionStatus) {
+                  case QuestionStatusState.selected:
+                    return Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          learnBloc.add(SubmitClicked());
+                        },
+                        style: ElevatedButton.styleFrom(
+                          primary: AppColors.matisse,
                         ),
-                  isFirst || isLast
-                      ? const SizedBox.shrink()
-                      : const SizedBox(
-                          width: 16,
+                        child: const Text(
+                          'Submit',
                         ),
-                  isLast
-                      ? const SizedBox.shrink()
-                      : Expanded(
-                          child: ElevatedButton(
-                            onPressed: () {
-                              learnBloc.add(NextClicked());
-                            },
-                            style: ElevatedButton.styleFrom(
-                              primary: AppColors.matisse,
-                            ),
-                            child: const Text(
-                              'Next',
-                            ),
-                          ),
-                        ),
-                  const SizedBox(
-                    width: 16,
-                  ),
-                ],
-              )),
+                      ),
+                    );
+                  case QuestionStatusState.submitted:
+                    return Expanded(
+                      child: Row(
+                        children: [
+                          isFirst
+                              ? const SizedBox.shrink()
+                              : Expanded(
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      learnBloc.add(PrevClicked());
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      primary: AppColors.matisse,
+                                    ),
+                                    child: const Text(
+                                      'Prev',
+                                    ),
+                                  ),
+                                ),
+                          isFirst || isLast
+                              ? const SizedBox.shrink()
+                              : const SizedBox(
+                                  width: 16,
+                                ),
+                          isLast
+                              ? const SizedBox.shrink()
+                              : Expanded(
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      learnBloc.add(NextClicked());
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      primary: AppColors.matisse,
+                                    ),
+                                    child: const Text(
+                                      'Next',
+                                    ),
+                                  ),
+                                ),
+                        ],
+                      ),
+                    );
+                  case QuestionStatusState.initial:
+                  default:
+                    return const SizedBox.shrink();
+                }
+              }),
+              const SizedBox(
+                width: 16,
+              ),
+            ],
+          ),
           const SizedBox(
             height: 16,
           ),
@@ -157,19 +205,34 @@ class _LearnQuestionnaireScreenState extends State<LearnQuestionnaireScreen> {
     switch (question.type) {
       case AppConstants.questionnaireTypeFillBlanks:
         return FillBlanksPartListSelector(
-          (partList) => RichText(
-            text: TextSpan(
-              text: '',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-              children: _createSpans(partList),
+          (partList, selectedFillBlankOptions, questionStatus) => Text.rich(
+            TextSpan(
+              children: _createSpans(
+                  partList, selectedFillBlankOptions, questionStatus),
             ),
           ),
         );
       case AppConstants.questionnaireTypeMultiple:
+        return RichText(
+          text: TextSpan(
+            text: question.question,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+            children: [
+              TextSpan(
+                text: ' (${question.noOfAnswers} correct answers)',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.matisse,
+                ),
+              ),
+            ],
+          ),
+        );
       case AppConstants.questionnaireTypeSingle:
       default:
         return Text(
@@ -182,29 +245,122 @@ class _LearnQuestionnaireScreenState extends State<LearnQuestionnaireScreen> {
     }
   }
 
-  List<TextSpan> _createSpans(List<FillBlanksPart> parts) {
-    final spans = <TextSpan>[];
+  List<InlineSpan> _createSpans(
+      List<FillBlanksPart> parts,
+      Map<Option, Option> selectedFillBlankOptions,
+      QuestionStatusState questionStatus) {
+    final spans = <InlineSpan>[];
     parts.asMap().forEach(
       (index, value) {
-        spans.add(
-          TextSpan(
-            text: value.content,
-            style: TextStyle(
-              fontSize: 18,
-              decoration: AppConstants.fillBlanksPartOption == value.type
-                  ? TextDecoration.underline
-                  : TextDecoration.none,
-              decorationColor: Colors.black,
-              fontWeight: FontWeight.bold,
-              color: AppConstants.fillBlanksPartOption == value.type
-                  ? AppColors.matisse
-                  : Colors.black,
+        if (AppConstants.fillBlanksPartOption == value.type) {
+          final String? blankContent = _getBlankContentByStatus(
+              questionStatus, value, selectedFillBlankOptions);
+          if (blankContent == null) {
+            spans.add(
+              WidgetSpan(
+                child: GestureDetector(
+                  onTap: () {
+                    if (value.option != null) {
+                      learnBloc.add(BlankSelected(mappedOption: value.option!));
+                    }
+                  },
+                  child: Container(
+                    width: 50.0,
+                    height: 18.0,
+                    color: AppColors.matisse,
+                  ),
+                ),
+              ),
+            );
+          } else {
+            spans.add(
+              TextSpan(
+                text: blankContent,
+                style: const TextStyle(
+                  fontSize: 18,
+                  decoration: TextDecoration.underline,
+                  decorationColor: Colors.black,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.matisse,
+                ),
+                recognizer: _setClickListener(value),
+              ),
+            );
+          }
+        } else {
+          spans.add(
+            TextSpan(
+              text: value.content,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
             ),
-          ),
-        );
+          );
+        }
       },
     );
 
     return spans;
+  }
+
+  Color _buildBorderColor(
+      bool isFillBlank,
+      QuestionStatusState questionStatus,
+      List<Option>? selectedOptions,
+      Option? fillBlankOption,
+      Map<Option, Option>? selectedFillBlankAnswer,
+      Option option) {
+    if (isFillBlank) {
+      final bool isSelected = (option == fillBlankOption) ||
+          (selectedFillBlankAnswer?.keys.contains(option) ?? false);
+      switch (questionStatus) {
+        case QuestionStatusState.submitted:
+          if (isSelected) {
+            return option == selectedFillBlankAnswer?[option]
+                ? Colors.green
+                : Colors.red;
+          } else {
+            return option.isAnswer ? Colors.green : Colors.transparent;
+          }
+        case QuestionStatusState.initial:
+        case QuestionStatusState.selected:
+        default:
+          return isSelected ? AppColors.matisse : Colors.transparent;
+      }
+    } else {
+      final bool isSelected = selectedOptions?.contains(option) ?? false;
+      switch (questionStatus) {
+        case QuestionStatusState.submitted:
+          return isSelected
+              ? (option.isAnswer ? Colors.green : Colors.red)
+              : (option.isAnswer ? Colors.green : Colors.transparent);
+        case QuestionStatusState.initial:
+        case QuestionStatusState.selected:
+        default:
+          return isSelected ? AppColors.matisse : Colors.transparent;
+      }
+    }
+  }
+
+  String? _getBlankContentByStatus(QuestionStatusState questionStatus,
+      FillBlanksPart value, Map<Option, Option> selectedFillBlankOptions) {
+    return (questionStatus == QuestionStatusState.submitted
+        ? '  ${value.option?.option}  '
+        : selectedFillBlankOptions.values.contains(value.option)
+            ? '  ${selectedFillBlankOptions.keys.firstWhere((element) => selectedFillBlankOptions[element] == value.option).option}  '
+            : null);
+  }
+
+  _setClickListener(FillBlanksPart value) {
+    if (value.option != null) {
+      return TapGestureRecognizer()
+        ..onTap = () {
+          learnBloc.add(BlankSelected(mappedOption: value.option!));
+        };
+    } else {
+      return null;
+    }
   }
 }
