@@ -124,7 +124,7 @@ class _ExamScreenState extends State<ExamScreen> {
             return IAPStatusSelector(
               (purchasePending, products) => TestTypeCardView(
                 title: 'Test $index',
-                subtitle: '37 questions, 56 Minute',
+                subtitle: '37 questions, 45 Minute',
                 image: AppImages.imgFillBlank,
                 onPressed: () {
                   if (purchasePending) {

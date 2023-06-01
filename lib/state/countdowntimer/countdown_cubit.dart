@@ -33,6 +33,6 @@ class CountdownCubit extends Cubit<CountdownState> {
     if (_countdownTimer != null) {
       _countdownTimer?.cancel();
     }
-    _duration = const Duration(minutes: 56);
+    _duration = const Duration(minutes: 45);
   }
 }
