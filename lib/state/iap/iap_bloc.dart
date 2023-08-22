@@ -36,8 +36,7 @@ class IAPBloc extends Bloc<IAPEvent, IAPState> {
 
   void _onInitStoreInfo(InitStoreInfo event, Emitter<IAPState> emit) async {
     emit(state.asLoading(true));
-
-    await Purchases.setup(StoreConfig.instance?.apiKey ?? '');
+    await Purchases.configure(PurchasesConfiguration(StoreConfig.instance?.apiKey ?? ''));
 
     try {
       final offering = await Purchases.getOfferings();
@@ -69,7 +68,7 @@ class IAPBloc extends Bloc<IAPEvent, IAPState> {
 
   void _onRestorePurchase(RestorePurchase event, Emitter<IAPState> emit) async {
     try {
-      final PurchaserInfo purchaserInfo = await Purchases.restoreTransactions();
+      final CustomerInfo purchaserInfo = await Purchases.restorePurchases();
       if (purchaserInfo.entitlements.active.isEmpty) {
         emit(state.asPurchaseUpdated(true));
       } else {

@@ -213,7 +213,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: products.isNotEmpty &&
                             products.first.availablePackages.isNotEmpty
                         ? Text(
-                            'Upgrade Now at ${products.first.availablePackages.first.product.priceString}')
+                            'Upgrade Now at ${products.first.availablePackages.first.storeProduct.priceString}')
                         : const Text(
                             'Upgrade Now',
                           ),
@@ -258,7 +258,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
     String period = products.first.availablePackages.first.packageType.name;
     String purchaseAmount =
-        products.first.availablePackages.first.product.priceString;
+        products.first.availablePackages.first.storeProduct.priceString;
 
     TextStyle defaultStyle = const TextStyle(color: AppColors.black);
     TextStyle linkStyle = const TextStyle(color: AppColors.matisse);

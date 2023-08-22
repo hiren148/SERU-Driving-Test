@@ -18,7 +18,7 @@ import 'package:driving_test/ui/widgets/test_type_card.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:purchases_flutter/offering_wrapper.dart';
+import 'package:purchases_flutter/models/offering_wrapper.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ExamScreen extends StatefulWidget {
@@ -210,7 +210,7 @@ class _ExamScreenState extends State<ExamScreen> {
     );
     String period = products.first.availablePackages.first.packageType.name;
     String purchaseAmount =
-        products.first.availablePackages.first.product.priceString;
+        products.first.availablePackages.first.storeProduct.priceString;
 
     TextStyle defaultStyle = const TextStyle(color: AppColors.black);
     TextStyle linkStyle = const TextStyle(color: AppColors.matisse);

@@ -22,7 +22,7 @@ class _DrivingTestAppState extends State<DrivingTestApp> {
   @override
   void initState() {
     iapBloc.add(InitStoreInfo());
-    Purchases.addPurchaserInfoUpdateListener((purchaserInfo) {
+    Purchases.addCustomerInfoUpdateListener((purchaserInfo) {
       _updatePurchaseStatus();
     });
     super.initState();
@@ -55,7 +55,7 @@ class _DrivingTestAppState extends State<DrivingTestApp> {
   }
 
   void _updatePurchaseStatus() async {
-    final purchaserInfo = await Purchases.getPurchaserInfo();
+    final purchaserInfo = await Purchases.getCustomerInfo();
 
     final entitlements = purchaserInfo.entitlements.active.values.toList();
     if (entitlements.isEmpty) {

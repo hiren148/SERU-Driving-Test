@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:dio_http_cache/dio_http_cache.dart';
 import 'package:driving_test/core/utils.dart';
 
 class NetworkManager {
@@ -9,12 +8,6 @@ class NetworkManager {
 
   factory NetworkManager() {
     final dio = Dio();
-
-    dio.interceptors.add(DioCacheManager(CacheConfig(
-      defaultMaxAge: const Duration(days: 1),
-      maxMemoryCacheCount: 3,
-    )).interceptor);
-
     return NetworkManager._(dio);
   }
 

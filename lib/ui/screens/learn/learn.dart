@@ -418,7 +418,7 @@ class _LearnScreenState extends State<LearnScreen> {
     );
     String period = products.first.availablePackages.first.packageType.name;
     String purchaseAmount =
-        products.first.availablePackages.first.product.priceString;
+        products.first.availablePackages.first.storeProduct.priceString;
 
     TextStyle defaultStyle = const TextStyle(color: AppColors.black);
     TextStyle linkStyle = const TextStyle(color: AppColors.matisse);
